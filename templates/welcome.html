@@ -8,5 +8,9 @@
 <body>
     <h1>Welcome, {{ username }}!</h1>
     <p>This is ChatNexa.</p>
+    <!-- Add logout button -->
+    <form action="{{ url_for('logout') }}" method="post">
+        <button type="submit">Logout</button>
+    </form>
 </body>
 </html>
