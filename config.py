@@ -11,3 +11,6 @@ class Config:
 
     # Debug mode setting
     DEBUG = True
+
+    # Session configuration
+    SESSION_TYPE = 'filesystem'  # Use filesystem-based session storage

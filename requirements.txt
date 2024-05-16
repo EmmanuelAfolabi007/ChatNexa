@@ -1,3 +1,4 @@
 Flask
-Flask-SQLAlchemy==3.0.0
+Flask-SQLAlchemy==2.4.4
 bcrypt==3.2.0
+flask-session
