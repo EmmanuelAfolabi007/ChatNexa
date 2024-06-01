@@ -14,5 +14,9 @@
             <li>{{ user.username }}</li>
         {% endfor %}
     </ul>
+
+    <form action="{{ url_for('logout') }}" method="post">
+        <button type="submit">Logout</button>
+    </form>
 </body>
 </html>

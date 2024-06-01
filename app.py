@@ -23,7 +23,7 @@ migrate = Migrate(app, db)
 # Function to clear session before request
 @app.before_request
 def clear_session():
-    if 'user_id' not in session:
+    if 'user_id' not in session and request.endpoint not in ['login', 'register']:
         session.clear()
 
 # Route for home page
@@ -53,15 +53,12 @@ def login():
 
         user = User.query.filter_by(username=username).first()
 
-        if user:
-            if bcrypt.checkpw(password.encode('utf-8'), user.password.encode('utf-8')):
-                session['user_id'] = user.id
-                session['username'] = user.username
-                return redirect(url_for('welcome', username=user.username))
-            else:
-                return "Invalid username or password. Please try again."
+        if user and bcrypt.checkpw(password.encode('utf-8'), user.password.encode('utf-8')):
+            session['user_id'] = user.id
+            session['username'] = user.username
+            return redirect(url_for('welcome', username=user.username))
         else:
-            return "User not found. Please register."
+            return "Invalid username or password. Please try again."
 
     return render_template('login.html')
 
