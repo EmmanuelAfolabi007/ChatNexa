@@ -103,6 +103,12 @@ def logout():
     session.pop('username', None)
     return redirect(url_for('login'))
 
+# Route for user profile page
+@app.route('/profile/<int:user_id>')
+def profile(user_id):
+    user = User.query.get_or_404(user_id)
+    return render_template('profile.html', user=user)
+
 # Run the application
 if __name__ == '__main__':
     app.run(debug=True)

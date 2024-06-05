@@ -3,20 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Home Page</title>
+    <title>{{ user.username }}'s Profile</title>
 </head>
 <body>
-    <h1>Welcome, {{ current_user.username }}</h1>
-    
-    <h2>Other Users:</h2>
-    <ul>
-        {% for user in other_users %}
-            <li><a href="{{ url_for('profile', user_id=user.id) }}">{{ user.username }}</a></li>
-        {% endfor %}
-    </ul>
+    <h1>{{ user.username }}'s Profile</h1>
+    <p>Email: {{ user.email }}</p>
 
     <form action="{{ url_for('logout') }}" method="post">
         <button type="submit">Logout</button>
     </form>
+    <a href="{{ url_for('index') }}">Back to Home</a>
 </body>
 </html>
