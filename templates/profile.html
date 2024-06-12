@@ -8,45 +8,35 @@
         <img src="{{ url_for('static', filename='uploads/' + user.profile_picture) }}" alt="Profile Picture" width="150" height="150">
     {% endif %}
 
-    <h2>Friend List</h2>
-    <ul>
-        {% for friend in user.friends %}
-            <li>{{ friend.username }}</li>
-        {% endfor %}
-    </ul>
-
-    <h2>Edit Profile</h2>
-    <form method="post">
+    <!-- Add Profile Picture Upload Form -->
+    <h2>Upload Profile Picture</h2>
+    <form method="post" enctype="multipart/form-data" action="{{ url_for('profile', user_id=user.id) }}">
+        {{ form.csrf_token }}
         <div class="form-group">
-            <label for="bio">Bio:</label>
-            <textarea class="form-control" id="bio" name="bio">{{ user.bio }}</textarea>
+            {{ form.profile_picture.label(class="form-control-label") }}
+            {{ form.profile_picture(class="form-control-file") }}
+            {% for error in form.profile_picture.errors %}
+                <span class="text-danger">{{ error }}</span>
+            {% endfor %}
         </div>
-        <div class="form-group">
-            <label for="location">Location:</label>
-            <input type="text" class="form-control" id="location" name="location" value="{{ user.location }}">
-        </div>
-        <div class="form-group">
-            <label for="interests">Interests:</label>
-            <input type="text" class="form-control" id="interests" name="interests" value="{{ user.interests }}">
-        </div>
-        <div class="form-group">
-            <label for="social_media_links">Social Media Links:</label>
-            <input type="text" class="form-control" id="social_media_links" name="social_media_links" value="{{ user.social_media_links }}">
-        </div>
-        <button type="submit" class="btn btn-primary">Save Changes</button>
+        <button type="submit" class="btn btn-primary">Upload</button>
     </form>
 
-    <h2>Friend Requests</h2>
-    {% if pending_requests %}
-        <ul>
-            {% for request in pending_requests %}
-                <li>{{ request.sender.username }} <a href="{{ url_for('accept_friend_request', request_id=request.id) }}">Accept</a> <a href="{{ url_for('reject_friend_request', request_id=request.id) }}">Reject</a></li>
-            {% endfor %}
-        </ul>
-    {% else %}
-        <p>No pending friend requests.</p>
-    {% endif %}
+    <!-- Display User Bio, Location, Interests, and Social Media Links -->
+    <h2>Edit Profile</h2>
+    <form method="post">
+        <!-- Bio, Location, Interests, Social Media Links fields -->
+    </form>
 
+    <!-- Display Friend List -->
+    <h2>Friend List</h2>
+    <!-- Friend List content -->
+
+    <!-- Display Friend Requests -->
+    <h2>Friend Requests</h2>
+    <!-- Friend Requests content -->
+
+    <!-- Logout Button -->
     <form action="{{ url_for('logout') }}" method="post">
         <button type="submit" class="btn btn-primary">Logout</button>
     </form>

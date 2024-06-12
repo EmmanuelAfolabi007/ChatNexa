@@ -11,9 +11,6 @@ from models import db, User, Friendship, Message
 from forms import ProfilePictureForm
 import os
 
-# Import forms
-from forms import ProfilePictureForm
-
 # Create Flask app and configure it
 app = Flask(__name__)
 app.config.from_object(Config)
@@ -120,16 +117,15 @@ def logout():
 @app.route('/profile/<int:user_id>', methods=['GET', 'POST'])
 def profile(user_id):
     user = User.query.get_or_404(user_id)
-    form = ProfilePictureForm(request.form, obj=user)  # Assuming you have a ProfileForm with fields for bio, location, interests, and social_media_links
-    if request.method == 'POST' and form.validate():
-        form.populate_obj(user)
+    form = ProfilePictureForm()  # Assuming you have a ProfilePictureForm with fields for profile_picture
+    if request.method == 'POST' and form.validate_on_submit():
         if form.profile_picture.data:
             filename = secure_filename(form.profile_picture.data.filename)
             form.profile_picture.data.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
             user.profile_picture = filename
-        db.session.commit()
-        flash('Profile updated successfully!')
-        return redirect(url_for('profile', user_id=user_id))
+            db.session.commit()
+            flash('Profile picture uploaded successfully!')
+            return redirect(url_for('profile', user_id=user_id))
     return render_template('profile.html', user=user, form=form)
 
 # Route to send friend request
@@ -254,13 +250,6 @@ def get_messages(recipient_id):
         'timestamp': message.timestamp.isoformat()
     } for message in messages])
 
-@socketio.on('message')
-def handle_message(data):
-    # Handle incoming messages
-    print('Received message:', data)
-    # Broadcast the message to all connected clients
-    send(data, broadcast=True)
-    
 # Backend Implementation
 @app.route('/search')
 def search():
@@ -283,4 +272,3 @@ print(safe_string)
 # Run the application
 if __name__ == '__main__':
     socketio.run(app, debug=True)
-
