@@ -1,22 +1,43 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Home Page</title>
-</head>
-<body>
-    <h1>Welcome, {{ current_user.username }}</h1>
-    
-    <h2>Other Users:</h2>
-    <ul>
-        {% for user in other_users %}
-            <li><a href="{{ url_for('profile', user_id=user.id) }}">{{ user.username }}</a></li>
-        {% endfor %}
-    </ul>
+{% extends "base.html" %}
 
-    <form action="{{ url_for('logout') }}" method="post">
-        <button type="submit">Logout</button>
-    </form>
-</body>
-</html>
+{% block content %}
+<div class="user-container">
+    <h1>Welcome to ChatNexa</h1>
+    <h2>Users</h2>
+    <div class="user-details-container">
+        <ul class="user-list">
+            {% for user in other_users.items %}
+                <li>{{ user.username }}</li>
+            {% endfor %}
+        </ul>
+        <div class="pagination">
+            {% if other_users.has_prev %}
+                <a href="{{ url_for('index', page=other_users.prev_num) }}">&laquo; Previous</a>
+            {% else %}
+                <span class="disabled">&laquo; Previous</span>
+            {% endif %}
+            {% for page_num in other_users.iter_pages() %}
+                {% if page_num %}
+                    {% if page_num == other_users.page %}
+                        <span class="current">{{ page_num }}</span>
+                    {% else %}
+                        <a href="{{ url_for('index', page=page_num) }}">{{ page_num }}</a>
+                    {% endif %}
+                {% else %}
+                    <span class="ellipsis">&hellip;</span>
+                {% endif %}
+            {% endfor %}
+            {% if other_users.has_next %}
+                <a href="{{ url_for('index', page=other_users.next_num) }}">Next &raquo;</a>
+            {% else %}
+                <span class="disabled">Next &raquo;</span>
+            {% endif %}
+        </div>
+
+        <div class="button-container">
+            <a href="{{ url_for('login') }}">Login</a>
+            <a href="{{ url_for('register') }}">Register</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

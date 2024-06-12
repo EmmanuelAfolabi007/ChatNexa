@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Real-time Notifications</h1>
+
+<div id="notifications">
+    <!-- Notifications will be dynamically added here -->
+</div>
+
+<script src="https://cdn.socket.io/4.0.1/socket.io.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        var socket = io.connect('http://' + document.domain + ':' + location.port);
+
+        socket.on('connect', function() {
+            console.log('Connected to the server.');
+        });
+
+        socket.on('notification', function(data) {
+            let notificationsDiv = document.getElementById('notifications');
+            let notificationItem = document.createElement('div');
+            notificationItem.classList.add('notification');
+            notificationItem.textContent = data.message;
+            notificationsDiv.appendChild(notificationItem);
+        });
+    });
+</script>
+{% endblock %}

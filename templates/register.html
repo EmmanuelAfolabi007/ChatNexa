@@ -1,24 +1,30 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ChatNexa - Register</title>
-</head>
-<body>
-    <h1>Register for ChatNexa</h1>
-    <form action="{{ url_for('register') }}" method="post">
-        <label for="email">Email:</label><br>
-        <input type="email" id="email" name="email" required><br><br>
+{% extends "base.html" %}
 
-        <label for="username">Username:</label><br>
-        <input type="text" id="username" name="username" required><br><br>
-        
-        <label for="password">Password:</label><br>
-        <input type="password" id="password" name="password" required><br><br>
-
-        <button type="submit">Register</button>
+{% block content %}
+<div class="register-container">
+    <form class="register-form" method="POST">
+        <h2>Register</h2>
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                <div class="error-message">{{ messages[0] }}</div>
+            {% endif %}
+        {% endwith %}
+        <div>
+            <label for="username">Username:</label><br>
+            <input type="text" id="username" name="username" required><br>
+        </div>
+        <div>
+            <label for="email">Email:</label><br>
+            <input type="email" id="email" name="email" required><br>
+        </div>
+        <div>
+            <label for="password">Password:</label><br>
+            <input type="password" id="password" name="password" required><br>
+        </div>
+        <div>
+            <button type="submit">Register</button>
+        </div>
+        <p>Already have an account? <a href="{{ url_for('login') }}">Login</a></p>
     </form>
-    <p>Already have an account? <a href="{{ url_for('login') }}">Login</a></p>
-</body>
-</html>
+</div>
+{% endblock %}

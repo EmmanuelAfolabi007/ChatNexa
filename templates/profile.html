@@ -1,17 +1,55 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ user.username }}'s Profile</title>
-</head>
-<body>
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
     <h1>{{ user.username }}'s Profile</h1>
     <p>Email: {{ user.email }}</p>
+    {% if user.profile_picture %}
+        <img src="{{ url_for('static', filename='uploads/' + user.profile_picture) }}" alt="Profile Picture" width="150" height="150">
+    {% endif %}
+
+    <h2>Friend List</h2>
+    <ul>
+        {% for friend in user.friends %}
+            <li>{{ friend.username }}</li>
+        {% endfor %}
+    </ul>
+
+    {% if user != current_user %}
+        {% if not is_friend %}
+            {% if not friend_request_sent %}
+                <form action="{{ url_for('send_friend_request', friend_id=user.id) }}" method="post">
+                    <button type="submit">Send Friend Request</button>
+                </form>
+            {% else %}
+                <p>Friend request sent</p>
+            {% endif %}
+        {% endif %}
+    {% endif %}
+
+    {% if pending_requests %}
+        <h2>Pending Friend Requests</h2>
+        <ul>
+            {% for request in pending_requests %}
+                <li>{{ request.sender.username }} <a href="{{ url_for('accept_friend_request', request_id=request.id) }}">Accept</a> <a href="{{ url_for('reject_friend_request', request_id=request.id) }}">Reject</a></li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+
+    <form method="POST" enctype="multipart/form-data">
+        {{ form.hidden_tag() }}
+        <div>
+            <label for="profile_picture">Profile Picture:</label><br>
+            {{ form.profile_picture(size=32) }}<br>
+        </div>
+        <div>
+            <button type="submit">Upload Picture</button>
+        </div>
+    </form>
 
     <form action="{{ url_for('logout') }}" method="post">
         <button type="submit">Logout</button>
     </form>
     <a href="{{ url_for('index') }}">Back to Home</a>
-</body>
-</html>
+</div>
+{% endblock %}

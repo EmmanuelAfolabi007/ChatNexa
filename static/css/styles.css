@@ -1,0 +1,65 @@
+/* Reset and general styling */
+body {
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f8f9fa;
+}
+
+/* Navbar styling */
+.navbar {
+    background-color: #4267B2; /* Facebook blue */
+    color: white;
+    padding: 1em;
+    text-align: center;
+}
+
+/* Container styling */
+.container {
+    padding: 2em;
+    background-color: white;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Flash message styling */
+.flash {
+    color: #dc3545; /* Bootstrap danger color */
+    font-weight: bold;
+}
+
+/* Profile picture styling */
+.profile-picture {
+    max-width: 150px;
+    border-radius: 50%;
+    border: 3px solid #4267B2; /* Facebook blue */
+}
+
+/* Friend request styling */
+.friend-request {
+    margin-top: 1em;
+    background-color: #f8f9fa; /* Light gray */
+    padding: 1em;
+    border-radius: 5px;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+}
+
+/* Button styling */
+.btn {
+    display: inline-block;
+    padding: 10px 20px;
+    margin: 10px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    text-align: center;
+    text-decoration: none;
+    color: white;
+    background-color: #4267B2; /* Facebook blue */
+    transition: background-color 0.3s ease;
+}
+
+.btn:hover {
+    background-color: #3b5998; /* Darker shade of Facebook blue */
+}

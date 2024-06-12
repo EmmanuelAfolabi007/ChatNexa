@@ -1,17 +1,23 @@
-# Import necessary modules
-from flask import Flask, render_template, redirect, url_for, request, session, abort
+from flask import Flask, render_template, redirect, url_for, request, session, abort, flash, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_session import Session
 from config import Config
+from flask_socketio import SocketIO, send, emit, join_room
+from datetime import datetime
 import bcrypt
+from werkzeug.utils import secure_filename
+from models import db, User, Friendship, Message
+import os
+
+# Import forms
+from forms import ProfilePictureForm
 
 # Create Flask app and configure it
 app = Flask(__name__)
 app.config.from_object(Config)
-db = SQLAlchemy(app)
+socketio = SocketIO(app)
 
-# Import User model
-from models import User
+db.init_app(app)
 
 # Initialize Flask Session
 Session(app)
@@ -20,10 +26,14 @@ Session(app)
 from flask_migrate import Migrate
 migrate = Migrate(app, db)
 
+# Function to send notifications to users
+def send_notification(user_id, message):
+    socketio.emit('notification', {'message': message}, room=f"user_{user_id}")
+
 # Function to clear session before request
 @app.before_request
 def clear_session():
-    if 'user_id' not in session and request.endpoint not in ['login', 'register']:
+    if 'user_id' not in session and request.endpoint not in ['login', 'register', 'static']:
         session.clear()
 
 # Route for home page
@@ -40,8 +50,8 @@ def index():
         session.clear()
         return redirect(url_for('login'))
     
-    other_users = User.query.filter(User.id != current_user_id).all()
-    
+    other_users = User.query.filter(User.id != current_user_id).paginate(page=1, per_page=10)
+
     return render_template('index.html', current_user=current_user, other_users=other_users)
 
 # Route for user login
@@ -58,7 +68,7 @@ def login():
             session['username'] = user.username
             return redirect(url_for('welcome', username=user.username))
         else:
-            return "Invalid username or password. Please try again."
+            flash("Invalid username or password. Please try again.")
 
     return render_template('login.html')
 
@@ -74,7 +84,8 @@ def register():
         existing_user = User.query.filter_by(username=username).first() or \
                         User.query.filter_by(email=email).first()
         if existing_user:
-            return "Username or email already exists. Please choose a different one."
+            flash("Username or email already exists. Please choose a different one.")
+            return redirect(url_for('register'))
 
         # Hash the password
         hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
@@ -104,11 +115,142 @@ def logout():
     return redirect(url_for('login'))
 
 # Route for user profile page
-@app.route('/profile/<int:user_id>')
+@app.route('/profile/<int:user_id>', methods=['GET', 'POST'])
 def profile(user_id):
     user = User.query.get_or_404(user_id)
-    return render_template('profile.html', user=user)
+    form = ProfilePictureForm()
+    if form.validate_on_submit():
+        filename = secure_filename(form.profile_picture.data.filename)
+        form.profile_picture.data.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+        user.profile_picture = filename
+        db.session.commit()
+        flash('Profile picture updated!')
+        return redirect(url_for('profile', user_id=user_id))
+    return render_template('profile.html', user=user, form=form)
+
+# Route to send friend request
+@app.route('/send_friend_request/<int:friend_id>', methods=['POST'])
+def send_friend_request(friend_id):
+    if 'user_id' not in session:
+        abort(401)
+    
+    user_id = session['user_id']
+    existing_friendship = Friendship.query.filter(
+        (Friendship.user_id == user_id) & (Friendship.friend_id == friend_id) |
+        (Friendship.user_id == friend_id) & (Friendship.friend_id == user_id)
+    ).first()
+
+    if existing_friendship:
+        flash('Friend request already sent or you are already friends.')
+        return redirect(url_for('profile', user_id=friend_id))
+
+    new_friendship = Friendship(user_id=user_id, friend_id=friend_id, status='pending')
+    db.session.add(new_friendship)
+    db.session.commit()
+    flash('Friend request sent.')
+    
+    # Emit notification to the friend
+    send_notification(friend_id, 'You received a friend request!')
+
+    return redirect(url_for('profile', user_id=friend_id))
+
+# Route to accept friend request
+@app.route('/accept_friend_request/<int:request_id>', methods=['POST'])
+def accept_friend_request(request_id):
+    if 'user_id' not in session:
+        abort(401)
+
+    friendship = Friendship.query.get_or_404(request_id)
+    if friendship.friend_id != session['user_id']:
+        abort(403)
+
+    friendship.status = 'accepted'
+    db.session.commit()
+    flash('Friend request accepted.')
+    
+    # Emit notification to the requester
+    send_notification(friendship.user_id, 'Your friend request was accepted.')
+
+    return redirect(url_for('profile', user_id=friendship.user_id))
+
+# Route to reject friend request
+@app.route('/reject_friend_request/<int:request_id>', methods=['POST'])
+def reject_friend_request(request_id):
+    if 'user_id' not in session:
+        abort(401)
+
+    friendship = Friendship.query.get_or_404(request_id)
+    if friendship.friend_id != session['user_id']:
+        abort(403)
+
+    db.session.delete(friendship)
+    db.session.commit()
+    flash('Friend request rejected.')
+    
+    # Emit notification to the requester
+    send_notification(friendship.user_id, 'Your friend request was rejected.')
+
+    return redirect(url_for('profile', user_id=friendship.user_id))
+
+# Route for chat
+@app.route('/chat/<int:recipient_id>', methods=['GET', 'POST'])
+def chat(recipient_id):
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+
+    # Ensure only authenticated users can access the chat feature
+    if request.method == 'POST':
+        content = request.form.get('content')
+        if not content:
+            flash('Message content cannot be empty.')
+
+        # Authorization: Verify users have permission to send messages
+
+        recipient = User.query.get(recipient_id)
+        if not recipient:
+            abort(404)
+
+        sender_id = session['user_id']
+        message = Message(sender_id=sender_id, recipient_id=recipient_id, content=content, timestamp=datetime.utcnow())
+        db.session.add(message)
+        db.session.commit()
+
+        # Emit the message to the recipient via WebSocket
+        socketio.emit('message', {
+            'sender_id': sender_id,
+            'recipient_id': recipient_id,
+            'sender': session['username'],
+            'content': content,
+            'timestamp': message.timestamp.isoformat()
+        }, room=f"user_{recipient_id}")
+
+    # Retrieve chat history with the recipient
+    messages = Message.query.filter(
+        ((Message.sender_id == session['user_id']) & (Message.recipient_id == recipient_id)) |
+        ((Message.sender_id == recipient_id) & (Message.recipient_id == session['user_id']))
+    ).order_by(Message.timestamp.asc()).all()
+
+    return render_template('chat.html', recipient_id=recipient_id, messages=messages)
+
+# Route to fetch messages with a specific recipient via AJAX
+@app.route('/messages/<int:recipient_id>')
+def get_messages(recipient_id):
+    if 'user_id' not in session:
+        return abort(401)
+
+    current_user_id = session['user_id']
+    messages = Message.query.filter(
+        ((Message.sender_id == current_user_id) & (Message.recipient_id == recipient_id)) |
+        ((Message.sender_id == recipient_id) & (Message.recipient_id == current_user_id))
+    ).order_by(Message.timestamp.asc()).all()
+
+    return jsonify([{
+        'sender': message.sender.username,
+        'content': message.content,
+        'timestamp': message.timestamp.isoformat()
+    } for message in messages])
 
 # Run the application
 if __name__ == '__main__':
-    app.run(debug=True)
+    socketio.run(app, debug=True)
+

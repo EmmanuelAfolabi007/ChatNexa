@@ -1,21 +1,26 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login</title>
-</head>
-<body>
-    <h1>Login</h1>
-    <form action="{{ url_for('login') }}" method="post">
-        <label for="username">Username:</label><br>
-        <input type="text" id="username" name="username" required><br><br>
-        
-        <label for="password">Password:</label><br>
-        <input type="password" id="password" name="password" required><br><br>
+{% extends "base.html" %}
 
-        <button type="submit">Login</button>
+{% block content %}
+<div class="login-container">
+    <form class="login-form" method="POST">
+        <h2>Login</h2>
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                <div class="error-message">{{ messages[0] }}</div>
+            {% endif %}
+        {% endwith %}
+        <div>
+            <label for="username">Username:</label><br>
+            <input type="text" id="username" name="username" required><br>
+        </div>
+        <div>
+            <label for="password">Password:</label><br>
+            <input type="password" id="password" name="password" required><br>
+        </div>
+        <div>
+            <button type="submit">Login</button>
+        </div>
+        <p>Don't have an account? <a href="{{ url_for('register') }}">Register</a></p>
     </form>
-    <p>Don't have an account? <a href="{{ url_for('register') }}">Register</a></p>
-</body>
-</html>
+</div>
+{% endblock %}
