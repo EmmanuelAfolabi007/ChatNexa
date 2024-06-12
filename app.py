@@ -1,6 +1,7 @@
 from flask import Flask, render_template, redirect, url_for, request, session, abort, flash, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_session import Session
+from markupsafe import Markup
 from config import Config
 from flask_socketio import SocketIO, send, emit, join_room
 from datetime import datetime
@@ -274,6 +275,10 @@ def search():
     ]
 
     return jsonify(results)
+
+# Your code using Markup goes here
+safe_string = Markup("<strong>Safe HTML</strong>")
+print(safe_string)
 
 # Run the application
 if __name__ == '__main__':
