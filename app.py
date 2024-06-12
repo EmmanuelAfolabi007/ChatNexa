@@ -7,6 +7,7 @@ from datetime import datetime
 import bcrypt
 from werkzeug.utils import secure_filename
 from models import db, User, Friendship, Message
+from forms import ProfilePictureForm
 import os
 
 # Import forms
@@ -118,13 +119,15 @@ def logout():
 @app.route('/profile/<int:user_id>', methods=['GET', 'POST'])
 def profile(user_id):
     user = User.query.get_or_404(user_id)
-    form = ProfilePictureForm()
-    if form.validate_on_submit():
-        filename = secure_filename(form.profile_picture.data.filename)
-        form.profile_picture.data.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-        user.profile_picture = filename
+    form = ProfilePictureForm(request.form, obj=user)  # Assuming you have a ProfileForm with fields for bio, location, interests, and social_media_links
+    if request.method == 'POST' and form.validate():
+        form.populate_obj(user)
+        if form.profile_picture.data:
+            filename = secure_filename(form.profile_picture.data.filename)
+            form.profile_picture.data.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            user.profile_picture = filename
         db.session.commit()
-        flash('Profile picture updated!')
+        flash('Profile updated successfully!')
         return redirect(url_for('profile', user_id=user_id))
     return render_template('profile.html', user=user, form=form)
 
@@ -249,6 +252,28 @@ def get_messages(recipient_id):
         'content': message.content,
         'timestamp': message.timestamp.isoformat()
     } for message in messages])
+
+@socketio.on('message')
+def handle_message(data):
+    # Handle incoming messages
+    print('Received message:', data)
+    # Broadcast the message to all connected clients
+    send(data, broadcast=True)
+    
+# Backend Implementation
+@app.route('/search')
+def search():
+    query = request.args.get('q')  # Get the search query from the request parameters
+
+    # Dummy search results for demonstration purposes
+    results = [
+        {'type': 'user', 'id': 1, 'name': 'John Doe'},
+        {'type': 'user', 'id': 2, 'name': 'Alice Smith'},
+        {'type': 'group', 'id': 1, 'name': 'Travel Enthusiasts'},
+        {'type': 'content', 'id': 1, 'title': 'Best Travel Destinations'}
+    ]
+
+    return jsonify(results)
 
 # Run the application
 if __name__ == '__main__':

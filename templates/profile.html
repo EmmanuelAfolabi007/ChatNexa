@@ -15,41 +15,41 @@
         {% endfor %}
     </ul>
 
-    {% if user != current_user %}
-        {% if not is_friend %}
-            {% if not friend_request_sent %}
-                <form action="{{ url_for('send_friend_request', friend_id=user.id) }}" method="post">
-                    <button type="submit">Send Friend Request</button>
-                </form>
-            {% else %}
-                <p>Friend request sent</p>
-            {% endif %}
-        {% endif %}
-    {% endif %}
+    <h2>Edit Profile</h2>
+    <form method="post">
+        <div class="form-group">
+            <label for="bio">Bio:</label>
+            <textarea class="form-control" id="bio" name="bio">{{ user.bio }}</textarea>
+        </div>
+        <div class="form-group">
+            <label for="location">Location:</label>
+            <input type="text" class="form-control" id="location" name="location" value="{{ user.location }}">
+        </div>
+        <div class="form-group">
+            <label for="interests">Interests:</label>
+            <input type="text" class="form-control" id="interests" name="interests" value="{{ user.interests }}">
+        </div>
+        <div class="form-group">
+            <label for="social_media_links">Social Media Links:</label>
+            <input type="text" class="form-control" id="social_media_links" name="social_media_links" value="{{ user.social_media_links }}">
+        </div>
+        <button type="submit" class="btn btn-primary">Save Changes</button>
+    </form>
 
+    <h2>Friend Requests</h2>
     {% if pending_requests %}
-        <h2>Pending Friend Requests</h2>
         <ul>
             {% for request in pending_requests %}
                 <li>{{ request.sender.username }} <a href="{{ url_for('accept_friend_request', request_id=request.id) }}">Accept</a> <a href="{{ url_for('reject_friend_request', request_id=request.id) }}">Reject</a></li>
             {% endfor %}
         </ul>
+    {% else %}
+        <p>No pending friend requests.</p>
     {% endif %}
 
-    <form method="POST" enctype="multipart/form-data">
-        {{ form.hidden_tag() }}
-        <div>
-            <label for="profile_picture">Profile Picture:</label><br>
-            {{ form.profile_picture(size=32) }}<br>
-        </div>
-        <div>
-            <button type="submit">Upload Picture</button>
-        </div>
-    </form>
-
     <form action="{{ url_for('logout') }}" method="post">
-        <button type="submit">Logout</button>
+        <button type="submit" class="btn btn-primary">Logout</button>
     </form>
-    <a href="{{ url_for('index') }}">Back to Home</a>
+    <a href="{{ url_for('index') }}" class="btn btn-secondary">Back to Home</a>
 </div>
 {% endblock %}

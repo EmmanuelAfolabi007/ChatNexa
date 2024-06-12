@@ -2,16 +2,18 @@
 
 {% block content %}
 <div class="container">
-    <ul class="user-list">
+    <ul class="list-group user-list">
         {% for user in users %}
-            <li onclick="selectUser({{ user.id }}, '{{ user.username }}')">{{ user.username }}</li>
+            <li class="list-group-item" onclick="selectUser({{ user.id }}, '{{ user.username }}')">{{ user.username }}</li>
         {% endfor %}
     </ul>
     <div class="chat-window">
         <div class="messages" id="messages"></div>
-        <div class="message-input">
-            <input type="text" id="messageInput" placeholder="Type your message here...">
-            <button onclick="sendMessage()">Send</button>
+        <div class="input-group">
+            <input type="text" class="form-control" id="messageInput" placeholder="Type your message here...">
+            <div class="input-group-append">
+                <button class="btn btn-primary" type="button" onclick="sendMessage()">Send</button>
+            </div>
         </div>
     </div>
 </div>

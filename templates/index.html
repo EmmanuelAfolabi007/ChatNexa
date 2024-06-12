@@ -5,38 +5,47 @@
     <h1>Welcome to ChatNexa</h1>
     <h2>Users</h2>
     <div class="user-details-container">
-        <ul class="user-list">
+        <ul class="list-group user-list">
             {% for user in other_users.items %}
-                <li>{{ user.username }}</li>
+                <li class="list-group-item">{{ user.username }}</li>
             {% endfor %}
         </ul>
-        <div class="pagination">
-            {% if other_users.has_prev %}
-                <a href="{{ url_for('index', page=other_users.prev_num) }}">&laquo; Previous</a>
-            {% else %}
-                <span class="disabled">&laquo; Previous</span>
-            {% endif %}
-            {% for page_num in other_users.iter_pages() %}
-                {% if page_num %}
-                    {% if page_num == other_users.page %}
-                        <span class="current">{{ page_num }}</span>
-                    {% else %}
-                        <a href="{{ url_for('index', page=page_num) }}">{{ page_num }}</a>
-                    {% endif %}
+        <nav aria-label="Page navigation">
+            <ul class="pagination">
+                {% if other_users.has_prev %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('index', page=other_users.prev_num) }}">&laquo; Previous</a>
+                    </li>
                 {% else %}
-                    <span class="ellipsis">&hellip;</span>
+                    <li class="page-item disabled">
+                        <span class="page-link">&laquo; Previous</span>
+                    </li>
                 {% endif %}
-            {% endfor %}
-            {% if other_users.has_next %}
-                <a href="{{ url_for('index', page=other_users.next_num) }}">Next &raquo;</a>
-            {% else %}
-                <span class="disabled">Next &raquo;</span>
-            {% endif %}
-        </div>
-
+                {% for page_num in other_users.iter_pages() %}
+                    {% if page_num %}
+                        {% if page_num == other_users.page %}
+                            <li class="page-item active"><span class="page-link">{{ page_num }}</span></li>
+                        {% else %}
+                            <li class="page-item"><a class="page-link" href="{{ url_for('index', page=page_num) }}">{{ page_num }}</a></li>
+                        {% endif %}
+                    {% else %}
+                        <li class="page-item disabled"><span class="page-link">...</span></li>
+                    {% endif %}
+                {% endfor %}
+                {% if other_users.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('index', page=other_users.next_num) }}">Next &raquo;</a>
+                    </li>
+                {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link">Next &raquo;</span>
+                    </li>
+                {% endif %}
+            </ul>
+        </nav>
         <div class="button-container">
-            <a href="{{ url_for('login') }}">Login</a>
-            <a href="{{ url_for('register') }}">Register</a>
+            <a class="btn btn-primary" href="{{ url_for('login') }}">Login</a>
+            <a class="btn btn-primary" href="{{ url_for('register') }}">Register</a>
         </div>
     </div>
 </div>

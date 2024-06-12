@@ -6,23 +6,22 @@
         <h2>Register</h2>
         {% with messages = get_flashed_messages() %}
             {% if messages %}
-                <div class="error-message">{{ messages[0] }}</div>
+                <div class="alert alert-danger">{{ messages[0] }}</div>
             {% endif %}
         {% endwith %}
-        <div>
-            <label for="username">Username:</label><br>
-            <input type="text" id="username" name="username" required><br>
+        <div class="form-group">
+            <label for="username">Username:</label>
+            <input type="text" id="username" name="username" class="form-control" required>
         </div>
-        <div>
-            <label for="email">Email:</label><br>
-            <input type="email" id="email" name="email" required><br>
+        <div class="form-group">
+            <label for="email">Email:</label>
+            <input type="email" id="email" name="email" class="form-control" required>
         </div>
-        <div>
-            <label for="password">Password:</label><br>
-            <input type="password" id="password" name="password" required><br>
+        <div class="form-group">
+            <label for="password">Password:</label>
+            <input type="password" id="password" name="password" class="form-control" required>
         </div>
-        <div>
-            <button type="submit">Register</button>
+        <button type="submit" class="btn btn-primary">Register</button>
         </div>
         <p>Already have an account? <a href="{{ url_for('login') }}">Login</a></p>
     </form>

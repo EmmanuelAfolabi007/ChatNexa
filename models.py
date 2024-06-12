@@ -9,6 +9,10 @@ class User(db.Model):
     email = db.Column(db.String(120), index=True, unique=True, nullable=False)
     password = db.Column(db.String(128), nullable=False)
     profile_picture = db.Column(db.String(128), nullable=True)
+    bio = db.Column(db.Text)
+    location = db.Column(db.String(100))
+    interests = db.Column(db.String(200))
+    social_media_links = db.Column(db.String(200))
 
     def __repr__(self):
         return '<User {}>'.format(self.username)

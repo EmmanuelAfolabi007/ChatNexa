@@ -20,6 +20,8 @@ body {
     background-color: white;
     border-radius: 10px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    max-width: 800px; /* Limit container width */
+    margin: 0 auto; /* Center container horizontally */
 }
 
 /* Flash message styling */
@@ -62,4 +64,23 @@ body {
 
 .btn:hover {
     background-color: #3b5998; /* Darker shade of Facebook blue */
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    /* Navbar adjustments */
+    .navbar {
+        padding: 0.5em;
+    }
+
+    /* Container adjustments */
+    .container {
+        padding: 1em;
+    }
+
+    /* Button adjustments */
+    .btn {
+        padding: 8px 16px;
+        margin: 8px;
+    }
 }
